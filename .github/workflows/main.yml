@@ -23,11 +23,12 @@ jobs:
           cd /tmp/app
           sed -i 's#<application#<uses-permission android:name="android.permission.BLUETOOTH"/><uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/><uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/><uses-permission android:name="android.permission.BLUETOOTH_SCAN"/><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/><application#' android/app/src/main/AndroidManifest.xml
           flutter pub get
-          P=$(find $HOME/.pub-cache -path "*flutter_bluetooth_serial-*/android/build.gradle" | head -1)
-          D=$(dirname "$P")
-          echo "Kotlin files in plugin:"; find "$D" -name "*.kt" | head
-          sed -i 's/package="[^"]*"//' "$D/src/main/AndroidManifest.xml"
-          cat > "$P" <<'EOF'
+          D=$(ls -d $HOME/.pub-cache/hosted/pub.dev/flutter_bluetooth_serial-*/ | head -1)
+          echo "Plugin dir: $D"
+          ls "$D/android"
+          find "$D/android" -name "*.kt" | head
+          sed -i 's/package="[^"]*"//' "$D/android/src/main/AndroidManifest.xml"
+          cat > "$D/android/build.gradle" <<'EOF'
           group 'io.github.edufolly.flutterbluetoothserial'
           version '1.0-SNAPSHOT'
 
