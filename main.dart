@@ -41,7 +41,7 @@ class _HomePageState extends State<HomePage> {
       return;
     }
     try {
-      _conn!.output.add(Uint8List.fromList(utf8.encode('$msg\n')));
+      _conn!.output.add(Uint8List.fromList(utf8.encode(msg)));
       await _conn!.output.allSent;
     } catch (_) {
       _toast('Send failed');
@@ -221,7 +221,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _floorButton(int n) => GestureDetector(
-        onTap: () => _send('Floor $n'),
+        onTap: () => _send('floor $n'),
         child: Container(
           height: 110,
           decoration: BoxDecoration(
