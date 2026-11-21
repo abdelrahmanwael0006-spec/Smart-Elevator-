@@ -24,15 +24,33 @@ jobs:
           sed -i 's#<application#<uses-permission android:name="android.permission.BLUETOOTH"/><uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/><uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/><uses-permission android:name="android.permission.BLUETOOTH_SCAN"/><uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/><application#' android/app/src/main/AndroidManifest.xml
           flutter pub get
           P=$(find $HOME/.pub-cache -path "*flutter_bluetooth_serial-*/android/build.gradle" | head -1)
-          python3 - "$P" <<'EOF'
-          import re, sys
-          p = sys.argv[1]
-          s = open(p).read()
-          s = re.sub(r'buildscript\s*\{.*?\n\}\n', '', s, count=1, flags=re.S)
-          s = s.replace('jcenter()', 'mavenCentral()')
-          s = re.sub(r'compileSdkVersion \d+', 'compileSdkVersion 34', s)
-          s = s.replace('android {', "android {\n    namespace 'io.github.edufolly.flutterbluetoothserial'", 1)
-          open(p, 'w').write(s)
+          D=$(dirname "$P")
+          echo "Kotlin files in plugin:"; find "$D" -name "*.kt" | head
+          sed -i 's/package="[^"]*"//' "$D/src/main/AndroidManifest.xml"
+          cat > "$P" <<'EOF'
+          group 'io.github.edufolly.flutterbluetoothserial'
+          version '1.0-SNAPSHOT'
+
+          rootProject.allprojects {
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+          }
+
+          apply plugin: 'com.android.library'
+
+          android {
+              namespace 'io.github.edufolly.flutterbluetoothserial'
+              compileSdkVersion 34
+              defaultConfig {
+                  minSdkVersion 19
+              }
+              compileOptions {
+                  sourceCompatibility JavaVersion.VERSION_1_8
+                  targetCompatibility JavaVersion.VERSION_1_8
+              }
+          }
           EOF
           flutter build apk --release
       - uses: actions/upload-artifact@v4
