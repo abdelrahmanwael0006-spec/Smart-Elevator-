@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bluetooth_serial/flutter_bluetooth_serial.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -43,6 +44,7 @@ class _HomePageState extends State<HomePage> {
     try {
       _conn!.output.add(Uint8List.fromList(utf8.encode(msg)));
       await _conn!.output.allSent;
+      _toast('Sent: $msg');
     } catch (_) {
       _toast('Send failed');
     }
@@ -220,26 +222,30 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Widget _floorButton(int n) => GestureDetector(
-        onTap: () => _send('floor $n'),
-        child: Container(
-          height: 110,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
-            gradient: const LinearGradient(
-                colors: [kAccent, Color(0xFF8E7CFF)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight),
-            boxShadow: [
-              BoxShadow(color: kAccent.withOpacity(0.35), blurRadius: 14, offset: const Offset(0, 6))
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Floor', style: TextStyle(fontSize: 14, color: Colors.white70)),
-              Text('$n', style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w800)),
-            ],
+  Widget _floorButton(int n) => Material(
+        color: kAccent,
+        borderRadius: BorderRadius.circular(20),
+        elevation: 6,
+        shadowColor: kAccent.withOpacity(0.5),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          splashColor: Colors.white30,
+          highlightColor: Colors.white12,
+          onTap: () {
+            HapticFeedback.mediumImpact();
+            _send('floor $n');
+          },
+          child: SizedBox(
+            height: 110,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Text('Floor',
+                    style: TextStyle(fontSize: 14, color: Colors.white70)),
+                Text('$n',
+                    style: const TextStyle(fontSize: 38, fontWeight: FontWeight.w800)),
+              ],
+            ),
           ),
         ),
       );
