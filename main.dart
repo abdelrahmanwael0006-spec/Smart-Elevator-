@@ -36,22 +36,27 @@ class _HomePageState extends State<HomePage> {
   bool _connecting = false;
   String _typed = '';
 
-  Future<void> _send(String msg) async {
+  // raw = exactly what the elevator receives, label = what the user sees
+  Future<void> _send(String raw, [String? label]) async {
     if (!connected) {
       _toast('Not connected');
       return;
     }
     try {
-      _conn!.output.add(Uint8List.fromList(utf8.encode(msg)));
+      _conn!.output.add(Uint8List.fromList(utf8.encode(raw)));
       await _conn!.output.allSent;
-      _toast('Sent: $msg');
+      _toast('Sent: ${label ?? raw}');
     } catch (_) {
       _toast('Send failed');
     }
   }
 
-  void _toast(String m) => ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(m), duration: const Duration(seconds: 1)));
+  void _toast(String m) {
+    final s = ScaffoldMessenger.of(context);
+    s.hideCurrentSnackBar();
+    s.showSnackBar(
+        SnackBar(content: Text(m), duration: const Duration(milliseconds: 800)));
+  }
 
   Future<void> _onConnectTap() async {
     if (connected) {
@@ -114,11 +119,11 @@ class _HomePageState extends State<HomePage> {
 
   void _key(String k) {
     if (k == 'OK') {
-      _send('OK');
+      _send('#', 'OK');
       setState(() => _typed = '');
     } else if (k == 'Delete') {
-      _send('Delete');
-      if (_typed.isNotEmpty) setState(() => _typed = _typed.substring(0, _typed.length - 1));
+      _send('*', 'Delete');
+      setState(() => _typed = '');
     } else {
       _send(k);
       if (_typed.length < 8) setState(() => _typed += k);
@@ -233,7 +238,7 @@ class _HomePageState extends State<HomePage> {
           highlightColor: Colors.white12,
           onTap: () {
             HapticFeedback.mediumImpact();
-            _send('floor $n');
+            _send('floor $n\n', 'floor $n');
           },
           child: SizedBox(
             height: 110,
